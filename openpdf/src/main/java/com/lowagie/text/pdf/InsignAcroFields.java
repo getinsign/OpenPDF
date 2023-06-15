@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.fop.afp.util.StringUtils;
 import org.w3c.dom.Node;
 
 import com.lowagie.text.DocumentException;
@@ -813,7 +812,7 @@ public class InsignAcroFields extends AcroFields
             return value;
         }
         //ISS-478 - Wenn kein Default gefunden wird, dann für Text beim Item selbst schauen (!merged)
-        if (PdfName.TX.equals(type) && StringUtils.isEmpty(ret)) {
+        if (PdfName.TX.equals(type) && org.apache.commons.lang3.StringUtils.isEmpty(ret)) {
         	PdfDictionary dict = item.getValue( 0 );
         	if (dict != null) {
         		 PdfObject val = PdfReader.getPdfObject(dict.get(PdfName.V));
