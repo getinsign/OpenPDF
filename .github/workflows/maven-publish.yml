@@ -30,6 +30,8 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
+    - name: Set maven version to ${{ vars.GITHUB_REF }}
+      run: mvn -B versions:set -DnewVersion=${{ vars.GITHUB_REF }}
     - name: Publish to GitHub Packages Apache Maven
       run: mvn -B clean package deploy --file pom.xml -Dmaven.resolver.transport=wagon -s $GITHUB_WORKSPACE/settings.xml --no-transfer-progress -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dgpg.skip
       env:
