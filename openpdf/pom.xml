@@ -16,9 +16,15 @@
     <properties>
         <java-module-name>com.github.librepdf.openpdf</java-module-name>
         <commons.lang.version>3.12.0</commons.lang.version>
+        <lombok.version>1.18.28</lombok.version>
     </properties>
 
     <dependencies>
+        <dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+		</dependency>        
         <dependency>
              <groupId>org.apache.commons</groupId>
              <artifactId>commons-lang3</artifactId>
