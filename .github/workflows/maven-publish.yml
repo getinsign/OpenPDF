@@ -9,23 +9,28 @@ on:
 
 jobs:
   build:
-
+  
     runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            java: [ 11 ]
+    name: Java ${{matrix.java}}  
+
     permissions:
       contents: read
       packages: write
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK 11
+    - name: Setup java
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
-        distribution: 'temurin'
+        java-version: ${{matrix.java}}
+        distribution: temurin
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn clean package deploy -Dmaven.resolver.transport=wagon -s $GITHUB_WORKSPACE/settings.xml --no-transfer-progress -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
+      run: mvn -B clean package deploy --file pom.xml -Dmaven.resolver.transport=wagon -s $GITHUB_WORKSPACE/settings.xml --no-transfer-progress -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dgpg.skip
       env:
         GITHUB_TOKEN: ${{ github.token }}
