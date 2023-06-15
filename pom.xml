@@ -45,12 +45,14 @@
         <developerConnection>scm:git:https://github.com/LibrePDF/OpenPDF</developerConnection>
     </scm>
     <!-- Distribution config from http://central.sonatype.org/pages/apache-maven.html#distribution-management-and-authentication -->
+    <!--
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+    -->
 
     <properties>
         <java-module-name>com.github.librepdf.openpdf.parent</java-module-name>
