@@ -47,8 +47,6 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 
 import com.lowagie.text.ExceptionConverter;
 
-import lombok.Cleanup;
-
 public class InsignPdfPKCS7 extends PdfPKCS7 {
 
 	private static Logger logger = Logger.getLogger(InsignPdfPKCS7.class.getName());
@@ -187,10 +185,11 @@ public class InsignPdfPKCS7 extends PdfPKCS7 {
 		      v = new ASN1EncodableVector();
 		      Collection certs = (Collection) getPrivateBaseClassField("certs");
 			for (Iterator i = certs.iterator(); i.hasNext();) {
-				@Cleanup
-		        ASN1InputStream tempstream = new ASN1InputStream(
-		            new ByteArrayInputStream(((X509Certificate) i.next()).getEncoded()));
-		        v.add(tempstream.readObject());
+		        try(ASN1InputStream tempstream = new ASN1InputStream(
+		            new ByteArrayInputStream(((X509Certificate) i.next()).getEncoded()))) {
+		        	v.add(tempstream.readObject());
+		        };
+		        
 		      }
 
 		      DERSet dercertificates = new DERSet(v);
@@ -287,15 +286,16 @@ public class InsignPdfPKCS7 extends PdfPKCS7 {
 	    // @todo: move this together with the rest of the defintions
 	    String ID_TIME_STAMP_TOKEN = "1.2.840.113549.1.9.16.2.14"; // RFC 3161
 	                                                               // id-aa-timeStampToken
-	    @Cleanup
-	    ASN1InputStream tempstream = new ASN1InputStream(new ByteArrayInputStream(
-	        timeStampToken));
+	    
 	    ASN1EncodableVector unauthAttributes = new ASN1EncodableVector();
-	
+		
 	    ASN1EncodableVector v = new ASN1EncodableVector();
-	    v.add(new ASN1ObjectIdentifier(ID_TIME_STAMP_TOKEN)); // id-aa-timeStampToken
-	    ASN1Sequence seq = (ASN1Sequence) tempstream.readObject();
-	    v.add(new DERSet(seq));
+	    try(ASN1InputStream tempstream = new ASN1InputStream(new ByteArrayInputStream(
+	        timeStampToken))) {
+	    	 v.add(new ASN1ObjectIdentifier(ID_TIME_STAMP_TOKEN)); // id-aa-timeStampToken
+	 	    ASN1Sequence seq = (ASN1Sequence) tempstream.readObject();
+	 	    v.add(new DERSet(seq));
+	    }
 	
 	    unauthAttributes.add(new DERSequence(v));
 	    return unauthAttributes;
@@ -338,10 +338,12 @@ public class InsignPdfPKCS7 extends PdfPKCS7 {
 		        v.add(new ASN1ObjectIdentifier(ID_ADBE_REVOCATION));
 		        ASN1EncodableVector v2 = new ASN1EncodableVector();
 		        for (Iterator i = crls.iterator(); i.hasNext();) {
-		          @Cleanup
+		          try(
 		          ASN1InputStream t = new ASN1InputStream(new ByteArrayInputStream(
-		              ((X509CRL) i.next()).getEncoded()));
-		          v2.add(t.readObject());
+		              ((X509CRL) i.next()).getEncoded()))) {
+		        	  v2.add(t.readObject());
+		          }
+		          
 		        }
 		        v.add(new DERSet(new DERSequence(new DERTaggedObject(true, 0,
 		            new DERSequence(v2)))));
@@ -355,10 +357,10 @@ public class InsignPdfPKCS7 extends PdfPKCS7 {
 	private static ASN1Primitive getIssuer(X500Principal principal) {
 	    try {
           byte[] enc = principal.getEncoded();
-	      @Cleanup
-	      ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(enc));
-	      ASN1Sequence seq = (ASN1Sequence) in.readObject();
-	      return seq;
+	      try( ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(enc))) {
+	    	  ASN1Sequence seq = (ASN1Sequence) in.readObject();
+		      return seq;
+	      }
 	    } catch (IOException e) {
 	      throw new ExceptionConverter(e);
 	    }

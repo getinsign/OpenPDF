@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.fop.afp.util.StringUtils;
 import org.w3c.dom.Node;
 
 import com.lowagie.text.DocumentException;
@@ -21,8 +21,6 @@ import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.error_messages.MessageLocalization;
-
-import lombok.Getter;
 
 /**
  * @see com.lowagie.text.pdf.AcroFields
@@ -43,14 +41,20 @@ public class InsignAcroFields extends AcroFields
 	 */
 	public class States{
 		
-		@Getter
 		boolean realGroup;//RW: Teil einer PseudoGruppe (Duplikate?) oder nicht (Radionbuttons)
-		@Getter
 		List<String> entries;//Set wär zwar schöner, aber mit List ist es kompatibler
 		
 		public States(final List<String> entries, final boolean realGroup){
 			this.entries = entries;
 			this.realGroup = realGroup;
+		}
+
+		public boolean isRealGroup() {
+			return realGroup;
+		}
+
+		public List<String> getEntries() {
+			return entries;
 		}
 		
 	}

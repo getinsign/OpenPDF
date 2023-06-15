@@ -27,7 +27,6 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.AcroFields.Item;
 
 import de.is2.sign.keydata.KeyData;
-import lombok.Cleanup;
 
 /**
  * VF:
@@ -277,7 +276,6 @@ public class InsignPdfSignatureAppearance extends PdfSignatureAppearance {
             bout = getSigout().buf;
             boutLen = getSigout().size();
             range[range.length - 1] = boutLen - range[range.length - 2];
-            @Cleanup
             ByteBuffer bf = new ByteBuffer();
             bf.append('[');
             for (long element : range) {
@@ -292,7 +290,6 @@ public class InsignPdfSignatureAppearance extends PdfSignatureAppearance {
                 raf = new RandomAccessFile(tempFile, "rw");
                 int boutLen = (int)raf.length();
                 range[range.length - 1] = boutLen - range[range.length - 2];
-                @Cleanup
                 ByteBuffer bf = new ByteBuffer();
                 bf.append('[');
                 for (long element : range) {

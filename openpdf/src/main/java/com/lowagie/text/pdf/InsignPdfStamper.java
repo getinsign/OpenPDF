@@ -18,8 +18,6 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.xml.xmp.XmpWriter;
 
-import lombok.Cleanup;
-
 /**
  * @author RolandW
  * @since 18.04.2013
@@ -61,14 +59,15 @@ public class InsignPdfStamper extends PdfStamper {
     
     public static InsignPdfStamper createSignature(PdfReader reader, OutputStream os, char pdfVersion, boolean append, String appVersion) throws DocumentException, IOException {
     	InsignPdfStamper stp;
-    	@Cleanup
-        ByteBuffer bout = new ByteBuffer();
-        stp = new InsignPdfStamper(reader, bout, pdfVersion, append, appVersion);
-        stp.sigApp = new InsignPdfSignatureAppearance(stp.stamper);
-        stp.sigApp.setSigout(bout);
-        stp.getSignatureAppearance().setOriginalout(os);
-        stp.getSignatureAppearance().setStamper(stp);
-        stp.hasSignature = true;
+        try (ByteBuffer bout = new ByteBuffer()) {
+        	stp = new InsignPdfStamper(reader, bout, pdfVersion, append, appVersion);
+            stp.sigApp = new InsignPdfSignatureAppearance(stp.stamper);
+            stp.sigApp.setSigout(bout);
+            stp.getSignatureAppearance().setOriginalout(os);
+            stp.getSignatureAppearance().setStamper(stp);
+            stp.hasSignature = true;
+        }
+        
       //hasSignature in der Basisklasse setzen:
         Field oFieldContext = null;
 		try {
