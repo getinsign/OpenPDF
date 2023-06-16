@@ -1,5 +1,5 @@
-module com.github.librepdf.pdfToolbox {
-    requires com.github.librepdf.openpdf;
+module de.getinsign.pdfToolbox {
+    requires de.getinsign.openpdf;
     requires org.jfree.jfreechart;
     requires jcommon;
 

@@ -1,5 +1,5 @@
-module com.github.librepdf.pdfSwing {
-    requires com.github.librepdf.openpdf;
+module de.getinsign.pdfSwing {
+    requires de.getinsign.openpdf;
     requires dom4j;
     requires pdf.renderer;
 
