@@ -954,5 +954,13 @@ public class InsignAcroFields extends AcroFields
         }
         return ret;
       }
-    
+    public  HashMap getStdFieldFontNames() {
+   	 HashMap<String, String[]> stdFieldFontNames = new HashMap<>();
+   	 try {
+   		 stdFieldFontNames = (HashMap<String, String[]>) getPrivateBaseClassField("stdFieldFontNames");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "stdFieldFontNames",e);
+		}
+   	return stdFieldFontNames;
+   }
 }
