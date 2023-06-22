@@ -94,10 +94,11 @@ public class InsignAcroFields extends AcroFields
 	    }
 	    for (int k = 1; k <= reader.getNumberOfPages(); ++k) {
 	      PdfDictionary page = reader.getPageNRelease(k);
-	      PdfArray annots = (PdfArray) PdfReader.getPdfObjectRelease(page.get(PdfName.ANNOTS), page);
-	      if (annots == null) {
-	        continue;
+	      PdfObject pdfObjectRelease = PdfReader.getPdfObjectRelease(page.get(PdfName.ANNOTS), page);
+	      if (pdfObjectRelease == null || !(pdfObjectRelease instanceof PdfArray)) {
+	    	  continue;
 	      }
+	      PdfArray annots = (PdfArray) pdfObjectRelease;
 	      for (int j = 0; j < annots.size(); ++j) {
 	        PdfDictionary annot = annots.getAsDict(j);
 	        if (annot == null) {
