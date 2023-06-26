@@ -217,24 +217,27 @@ public class InsignPdfStamperImp extends PdfStamperImp  {
         		   if (dic != null) {
         			   PdfArray array = dic.getAsArray(new PdfName("K"));
         			   
-        			   ArrayList<Integer> keepIndexes = new ArrayList<Integer>();
-        			   
-        			   PdfArray newEntry = new PdfArray();
-        			   for (int i = 0; i < array.size(); i++) {
-        				   PdfDictionary innerDic = array.getAsDict(i);
-        				   newEntry.add(innerDic);
-        				   keepIndexes.add(i);
-        				   if (innerDic != null) {
-        					   PdfName type = innerDic.getAsName(new PdfName("Type"));
-        					   PdfIndirectReference link = innerDic.getAsIndirectObject(new PdfName("Obj"));
-        					   
-        					   if (type != null && "/OBJR".equalsIgnoreCase(type.toString()) && 
-        							   (link == null || flattenedReferenceNumbers.contains(link.getNumber()))) {
-        						   newEntry.remove(newEntry.size() - 1);
-        					   }
-        				   }
+        			   if (array != null) {
+        				   ArrayList<Integer> keepIndexes = new ArrayList<Integer>();
+            			   
+            			   PdfArray newEntry = new PdfArray();
+            			   for (int i = 0; i < array.size(); i++) {
+            				   PdfDictionary innerDic = array.getAsDict(i);
+            				   newEntry.add(innerDic);
+            				   keepIndexes.add(i);
+            				   if (innerDic != null) {
+            					   PdfName type = innerDic.getAsName(new PdfName("Type"));
+            					   PdfIndirectReference link = innerDic.getAsIndirectObject(new PdfName("Obj"));
+            					   
+            					   if (type != null && "/OBJR".equalsIgnoreCase(type.toString()) && 
+            							   (link == null || flattenedReferenceNumbers.contains(link.getNumber()))) {
+            						   newEntry.remove(newEntry.size() - 1);
+            					   }
+            				   }
+            			   }
+            			   dic.put(new PdfName("K"), newEntry);
         			   }
-        			   dic.put(new PdfName("K"), newEntry);
+        			   
         		   }
         	   }
            }
