@@ -1145,11 +1145,14 @@ class PdfStamperImp extends PdfWriter {
             catalog.put(PdfName.ACROFORM, acroForm);
             markUsed(catalog);
         }
-        PdfDictionary dr = (PdfDictionary)PdfReader.getPdfObject(acroForm.get(PdfName.DR), acroForm);
-        if (dr == null) {
+        PdfObject drPdfObject = PdfReader.getPdfObject(acroForm.get(PdfName.DR), acroForm);
+        PdfDictionary dr = null;
+        if (drPdfObject == null || drPdfObject instanceof PdfNull) {
             dr = new PdfDictionary();
             acroForm.put(PdfName.DR, dr);
             markUsed(acroForm);
+        } else {
+        	dr = (PdfDictionary) drPdfObject;
         }
         markUsed(dr);
         for (PdfTemplate template : fieldTemplates.keySet()) {
