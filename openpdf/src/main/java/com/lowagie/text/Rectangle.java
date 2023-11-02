@@ -50,6 +50,7 @@ package com.lowagie.text;
 
 import com.lowagie.text.pdf.GrayColor;
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -66,11 +67,16 @@ import java.util.ArrayList;
  * @see Cell
  * @see HeaderFooter
  */
-public class Rectangle implements Element {
+public class Rectangle implements Element, Serializable{
 
   // CONSTANTS:
 
-  /** This is the value that will be used as <VAR>undefined </VAR>. */
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7942144076677568687L;
+
+/** This is the value that will be used as <VAR>undefined </VAR>. */
   public static final int UNDEFINED = -1;
 
   /** This represents one side of the border of the <CODE>Rectangle</CODE>. */

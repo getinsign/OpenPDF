@@ -54,6 +54,7 @@ import java.awt.color.ICC_Profile;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -88,7 +89,12 @@ public abstract class Image extends Rectangle {
 
     // static final membervariables
 
-    /** this is a kind of image alignment. */
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7100928722242783991L;
+
+	/** this is a kind of image alignment. */
     public static final int DEFAULT = 0;
 
     /** this is a kind of image alignment. */

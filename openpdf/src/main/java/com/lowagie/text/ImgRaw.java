@@ -50,6 +50,7 @@
 
 package com.lowagie.text;
 
+import java.io.Serializable;
 import java.net.URL;
 import com.lowagie.text.error_messages.MessageLocalization;
 
@@ -64,7 +65,12 @@ import com.lowagie.text.error_messages.MessageLocalization;
 
 public class ImgRaw extends Image {
 
-    ImgRaw(Image image) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1465590732754916670L;
+
+	ImgRaw(Image image) {
         super(image);
     }
 
