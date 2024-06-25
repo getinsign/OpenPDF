@@ -61,7 +61,7 @@
 
   <properties>
     <java-module-name>com.github.librepdf.openpdf.parent</java-module-name>
-    <java.version>17</java.version>
+    <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -413,16 +413,16 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>${maven.compiler.plugin.version}</version>
             <configuration>
-              <release>17</release>
+              <release>11</release>
             </configuration>
             <executions>
               <execution>
-                <id>compile-java-17</id>
+                <id>compile-java-11</id>
                 <goals>
                   <goal>compile</goal>
                 </goals>
                 <configuration>
-                  <release>17</release>
+                  <release>11</release>
                   <compileSourceRoots>
                     <compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot>
                   </compileSourceRoots>
