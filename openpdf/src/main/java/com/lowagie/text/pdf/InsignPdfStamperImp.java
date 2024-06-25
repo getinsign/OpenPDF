@@ -274,7 +274,7 @@ public class InsignPdfStamperImp extends PdfStamperImp  {
 			if (oldInfo.get(PdfName.PRODUCER) != null) {
 				producer = oldInfo.getAsString(PdfName.PRODUCER);
 			}
-			String prodstr="iS2 inSign";
+			String prodstr="inSign";
 			if (producer!=null)
 			{
 				if (producer.toString().length()>2 && producer.toString().charAt(0)==(char)254  && producer.toString().charAt(1)==(char)255 )
@@ -291,7 +291,7 @@ public class InsignPdfStamperImp extends PdfStamperImp  {
 					prodstr = producer.toString();
 				}
 				if (prodstr.contains("inSign")==false) {
-					prodstr += "; modified using iS2 inSign " + appVersion;
+					prodstr += "; modified using inSign " + appVersion;
 				}
 				oldInfo.put(PdfName.PRODUCER, new PdfString(prodstr));
 			}
