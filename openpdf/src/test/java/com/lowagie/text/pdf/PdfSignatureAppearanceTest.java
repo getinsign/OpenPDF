@@ -1,7 +1,13 @@
 package com.lowagie.text.pdf;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.Utilities;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,10 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.Utilities;
 import org.junit.jupiter.api.Test;
 
 public class PdfSignatureAppearanceTest {
@@ -26,11 +28,18 @@ public class PdfSignatureAppearanceTest {
         // These fields are provided to be able to generate the same content more than
         // once
         Calendar signDate = Calendar.getInstance();
+
+        byte[] originalDocId = null;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
 
+        byte[] resultDocument = null;
+
         for (int i = 0; i < 10; i++) {
-            try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf"); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                PdfReader reader = new PdfReader(is);
+            try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    PdfReader reader = new PdfReader(is)) {
+                originalDocId = reader.getDocumentId();
+
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
                 stp.setEnforcedModificationDate(signDate);
                 stp.setOverrideFileId(overrideFileId);
@@ -69,6 +78,21 @@ public class PdfSignatureAppearanceTest {
                 } else {
                     assertArrayEquals(expectedDigestClose, sha256Close);
                 }
+
+                resultDocument = baos.toByteArray();
+            }
+
+            try (InputStream resultIS = new ByteArrayInputStream(
+                    resultDocument); PdfReader resultReader = new PdfReader(resultIS)) {
+                byte[] documentId = resultReader.getDocumentId();
+                assertNotNull(documentId);
+                assertArrayEquals(originalDocId, documentId);
+
+                PdfArray idArray = resultReader.getTrailer().getAsArray(PdfName.ID);
+                assertEquals(2, idArray.size());
+                assertArrayEquals(documentId,
+                        com.lowagie.text.DocWriter.getISOBytes(idArray.getPdfObject(0).toString()));
+                assertEquals("123", idArray.getPdfObject(1).toString());
             }
         }
     }
@@ -79,11 +103,18 @@ public class PdfSignatureAppearanceTest {
         byte[] expectedDigestClose = null;
 
         Calendar signDate = Calendar.getInstance();
+
+        byte[] originalDocId = null;
         PdfObject overrideFileId = new PdfLiteral("<123><123>".getBytes());
 
+        byte[] resultDocument = null;
+
         for (int i = 0; i < 10; i++) {
-            try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf"); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                PdfReader reader = new PdfReader(is);
+            try (InputStream is = getClass().getResourceAsStream("/EmptyPage.pdf");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    PdfReader reader = new PdfReader(is)) {
+                originalDocId = reader.getDocumentId();
+
                 PdfStamper stp = PdfStamper.createSignature(reader, baos, '\0', null, true);
                 stp.setEnforcedModificationDate(signDate);
                 stp.setOverrideFileId(overrideFileId);
@@ -122,6 +153,21 @@ public class PdfSignatureAppearanceTest {
                 } else {
                     assertArrayEquals(expectedDigestClose, sha256Close);
                 }
+
+                resultDocument = baos.toByteArray();
+            }
+
+            try (InputStream resultIS = new ByteArrayInputStream(
+                    resultDocument); PdfReader resultReader = new PdfReader(resultIS)) {
+                byte[] documentId = resultReader.getDocumentId();
+                assertNotNull(documentId);
+                assertArrayEquals(originalDocId, documentId);
+
+                PdfArray idArray = resultReader.getTrailer().getAsArray(PdfName.ID);
+                assertEquals(2, idArray.size());
+                assertArrayEquals(documentId,
+                        com.lowagie.text.DocWriter.getISOBytes(idArray.getPdfObject(0).toString()));
+                assertEquals("123", idArray.getPdfObject(1).toString());
             }
         }
     }

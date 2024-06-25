@@ -1,6 +1,4 @@
 /*
- * GlyphLayoutFormDin91379
- * 
  * This code is part of the 'OpenPDF Tutorial'.
  * You can find the complete tutorial at the following address:
  * https://github.com/LibrePDF/OpenPDF/wiki/Tutorial
@@ -12,10 +10,6 @@
 package com.lowagie.examples.fonts;
 
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.Map;
-
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.AcroFields;
@@ -23,23 +17,24 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.LayoutProcessor;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfStamper;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
- * Prints characters and sequences of DIN 91379
- * with correct glyph layout
+ * Prints characters and sequences of DIN 91379 with correct glyph layout
  */
 public class GlyphLayoutFormDin91379 {
 
     public static String TEXT_INTRO =
             "Test of formatting for letters and sequences defined in:\n"
-                    + "DIN 91379:2022-08: Characters and defined character sequences in Unicode for the electronic\n "
-                    + "processing of names and data exchange in Europe, with CD-ROM\n"
-                    + "See https://www.beuth.de/de/norm/din-91379/353496133\n"
-                    + "    https://github.com/String-Latin/DIN-91379-Characters-and-Sequences"
+                    + "DIN 91379:2022-08: Characters and defined character sequences in Unicode for the\n"
+                    + "electronic processing of names and data exchange in Europe, with CD-ROM.\n"
+                    + "See https://github.com/String-Latin/DIN-91379-Characters-and-Sequences\n"
                     + "and https://en.wikipedia.org/wiki/DIN_91379\n\n"
-                    + "Fonts used: Noto Sans Regular, Noto Sans Math Regular\n"
-                    + "    see https://fonts.google.com/noto/specimen/Noto+Sans"
-                    + "    and https://github.com/googlefonts/noto-fonts/tree/main/hinted/ttf\n"
+                    + "Fonts used: Noto Sans Regular, Noto Sans Math Regular, Noto Serif Regular\n"
+                    + "See https://fonts.google.com/noto/specimen/Noto+Sans\n"
+                    + "and https://github.com/googlefonts/noto-fonts/tree/main/hinted/ttf\n"
                     + "Using LayoutProcessor for glyph layout with Java built-in routines.\n\n";
 
     public static String LATIN_CHARS_DIN_91379 =
@@ -80,7 +75,7 @@ public class GlyphLayoutFormDin91379 {
                     + "bnlopt; Non-Letters N3 (normative)\n"
                     + "¤ ¦ ¸ ¼ ½ ¾ \n"
                     + "bnlnot; Non-Letters N4 (normative) -omitted-\n"
-                    + "dc; Combining diacritics (normative) ̀-omitted-\n"
+                    + "dc; Combining diacritics (normative) -omitted-\n"
                     + "gl; Greek Letters (extended)\n"
                     + "Ά Έ Ή Ί Ό Ύ Ώ ΐ Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ "
                     + "Τ Υ Φ Χ Ψ Ω Ϊ Ϋ ά έ ή ί ΰ α β γ δ ε ζ η θ ι κ λ μ ν "
@@ -95,33 +90,31 @@ public class GlyphLayoutFormDin91379 {
 
     /**
      * Main method
+     *
      * @param args -- not used
      */
-    public static void main(String[] args) {
-        try {
-            test("GlyphLayoutFormDin91379.pdf", "com/lowagie/examples/fonts/form/PdfFormLayoutProcessor.pdf",
-                    TEXT_INTRO + LATIN_CHARS_DIN_91379);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws Exception {
+        test("GlyphLayoutFormDin91379.pdf");
     }
 
     /**
      * Run the test: Print the characters of DIN 91379 in a pdf form
-     * @param fileName Name of output file 
-     * @param formPath Name of input pdf form
-     * @param text Text to show
+     *
+     * @param fileName Name of output file
      * @throws Exception in case of error
      */
-    public static void test(String fileName, String formPath, String text) throws Exception {
+    public static void test(String fileName) throws Exception {
+        String formPath = "com/lowagie/examples/fonts/form/PdfFormLayoutProcessor.pdf";
+        String text = TEXT_INTRO + LATIN_CHARS_DIN_91379;
 
         // Enable the LayoutProcessor with kerning and ligatures
         LayoutProcessor.enableKernLiga();
 
-        try (  InputStream acroFormInputStream = GlyphLayoutFormDin91379.class.getClassLoader().getResourceAsStream(formPath);
+        try (InputStream acroFormInputStream = GlyphLayoutFormDin91379.class.getClassLoader()
+                .getResourceAsStream(formPath);
                 FileOutputStream outputStream = new FileOutputStream(fileName);
                 PdfReader reader = new PdfReader(acroFormInputStream)
-            ) {
+        ) {
 
             // The OpenType fonts loaded with FontFactory.register() are
             // available for glyph layout
@@ -149,6 +142,7 @@ public class GlyphLayoutFormDin91379 {
             stamper.setFormFlattening(true);
             stamper.setFullCompression();
             stamper.close();
+            LayoutProcessor.disable();
         }
     }
 }

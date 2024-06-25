@@ -181,8 +181,8 @@ public class FactoryProperties {
     }
 
     /**
-     * Gets a HyphenationEvent based on a String.
-     * For instance "en_UK,3,2" returns new HyphenationAuto("en", "UK", 3, 2);
+     * Gets a HyphenationEvent based on a String. For instance "en_UK,3,2" returns new HyphenationAuto("en", "UK", 3,
+     * 2);
      *
      * @param s a String, for instance "en_UK,2,2"
      * @return a HyphenationEvent
@@ -219,27 +219,13 @@ public class FactoryProperties {
         return new HyphenationAuto(lang, country, leftMin, rightMin);
     }
 
-    /**
-     * This method isn't used by iText, but you can use it to analyze
-     * the value of a style attribute inside a HashMap.
-     * The different elements of the style attribute are added to the
-     * HashMap as key-value pairs.
-     *
-     * @param h a HashMap that should have at least a key named
-     *          style. After this method is invoked, more keys could be added.
-     *
-     * @deprecated use {@link FactoryProperties#insertStyle(Map)} instead. (since 1.2.22)
-     */
-    @SuppressWarnings("unchecked")
     @Deprecated
-    public static void insertStyle(HashMap h) {
-        insertStyle((Map<String, String>) h);
-    }
-
+    // this method is nor called anywhere. But it is public so theoretically it could be called by consumers of OpenPdf, but why?
     public static void insertStyle(Map<String, String> h) {
         String style = h.get("style");
-        if (style == null)
+        if (style == null) {
             return;
+        }
         Properties prop = Markup.parseAttributes(style);
         for (Object o : prop.keySet()) {
             String key = (String) o;
@@ -254,21 +240,24 @@ public class FactoryProperties {
                     break;
                 case Markup.CSS_KEY_FONTSTYLE: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("italic") || ss.equals("oblique"))
+                    if (ss.equals("italic") || ss.equals("oblique")) {
                         h.put("i", null);
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_FONTWEIGHT: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
                     if (ss.equals("bold") || ss.equals("700") || ss.equals("800")
-                            || ss.equals("900"))
+                            || ss.equals("900")) {
                         h.put("b", null);
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_TEXTDECORATION: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE))
+                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE)) {
                         h.put("u", null);
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_COLOR:
@@ -305,14 +294,15 @@ public class FactoryProperties {
     /**
      * New method contributed by Lubos Strapko
      *
-     * @param h a Map
+     * @param h      a Map
      * @param cprops the ChainedProperties
      * @since 2.1.3
      */
     public static void insertStyle(Map<String, String> h, ChainedProperties cprops) {
         String style = h.get("style");
-        if (style == null)
+        if (style == null) {
             return;
+        }
         Properties prop = Markup.parseAttributes(style);
         for (Object o : prop.keySet()) {
             String key = (String) o;
@@ -322,8 +312,9 @@ public class FactoryProperties {
                     break;
                 case Markup.CSS_KEY_FONTSIZE: {
                     float actualFontSize = parseLength(cprops.getProperty(ElementTags.SIZE), Markup.DEFAULT_FONT_SIZE);
-                    if (actualFontSize <= 0f)
+                    if (actualFontSize <= 0f) {
                         actualFontSize = Markup.DEFAULT_FONT_SIZE;
+                    }
                     h.put(ElementTags.SIZE, parseLength(prop
                             .getProperty(key), actualFontSize)
                             + "pt");
@@ -331,39 +322,50 @@ public class FactoryProperties {
                 }
                 case Markup.CSS_KEY_FONTSTYLE: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals("italic") || ss.equals("oblique"))
+                    if (ss.equals("italic") || ss.equals("oblique")) {
                         h.put("i", null);
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_FONTWEIGHT: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
                     if (ss.equals("bold") || ss.equals("700") || ss.equals("800")
-                            || ss.equals("900"))
+                            || ss.equals("900")) {
                         h.put("b", null);
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_TEXTDECORATION: {
                     String ss = prop.getProperty(key).trim().toLowerCase();
-                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE))
+                    if (ss.equals(Markup.CSS_VALUE_UNDERLINE)) {
                         h.put("u", null);
+                    }
+                    break;
+                }
+                case Markup.CSS_KEY_BGCOLOR: {
+                    h.put(Markup.CSS_KEY_BGCOLOR, prop.getProperty(key));
+                    break;
+                }
+                case Markup.CSS_KEY_BG: {
+                    for (String attribute : prop.getProperty(key).split(" ")) {
+                        Color c = Markup.decodeColor(attribute.trim());
+                        if (c != null) {
+                            h.put(Markup.CSS_KEY_BGCOLOR, attribute.trim());
+                            break;
+                        }
+                    }
                     break;
                 }
                 case Markup.CSS_KEY_COLOR:
-                    Color c = Markup.decodeColor(prop.getProperty(key));
-                    if (c != null) {
-                        int hh = c.getRGB();
-                        String hs = Integer.toHexString(hh);
-                        hs = "000000" + hs;
-                        hs = "#" + hs.substring(hs.length() - 6);
-                        h.put("color", hs);
-                    }
+                    h.put(Markup.CSS_KEY_COLOR, prop.getProperty(key));
                     break;
                 case Markup.CSS_KEY_LINEHEIGHT: {
                     String ss = prop.getProperty(key).trim();
                     float actualFontSize = parseLength(cprops.getProperty(ElementTags.SIZE),
                             Markup.DEFAULT_FONT_SIZE);
-                    if (actualFontSize <= 0f)
+                    if (actualFontSize <= 0f) {
                         actualFontSize = Markup.DEFAULT_FONT_SIZE;
+                    }
                     float v = parseLength(prop.getProperty(key), actualFontSize);
                     if (ss.endsWith("%")) {
                         h.put("leading", "0," + (v / 100));
@@ -405,6 +407,10 @@ public class FactoryProperties {
         } else if (props.hasProperty("sup")) {
             chunk.setTextRise(size);
         }
+        Color bgColor = Markup.decodeColor(props.getProperty(Markup.CSS_KEY_BGCOLOR));
+        if (bgColor != null) {
+            chunk.setBackground(bgColor);
+        }
         chunk.setHyphenation(getHyphenation(props));
         return chunk;
     }
@@ -415,29 +421,36 @@ public class FactoryProperties {
             StringTokenizer tokenizer = new StringTokenizer(face, ",");
             while (tokenizer.hasMoreTokens()) {
                 face = tokenizer.nextToken().trim();
-                if (face.startsWith("\""))
+                if (face.startsWith("\"")) {
                     face = face.substring(1);
-                if (face.endsWith("\""))
+                }
+                if (face.endsWith("\"")) {
                     face = face.substring(0, face.length() - 1);
-                if (fontImp.isRegistered(face))
+                }
+                if (fontImp.isRegistered(face)) {
                     break;
+                }
             }
         }
         int style = 0;
-        if (props.hasProperty(HtmlTags.I))
+        if (props.hasProperty(HtmlTags.I)) {
             style |= Font.ITALIC;
-        if (props.hasProperty(HtmlTags.B))
+        }
+        if (props.hasProperty(HtmlTags.B)) {
             style |= Font.BOLD;
-        if (props.hasProperty(HtmlTags.U))
+        }
+        if (props.hasProperty(HtmlTags.U)) {
             style |= Font.UNDERLINE;
-        if (props.hasProperty(HtmlTags.S))
+        }
+        if (props.hasProperty(HtmlTags.S)) {
             style |= Font.STRIKETHRU;
+        }
 
         float size = props.findProperty(ElementTags.SIZE)
                 .flatMap(NumberUtilities::parseFloat)
                 .orElse(12f);
 
-        Color color = Markup.decodeColor(props.getProperty("color"));
+        Color color = Markup.decodeColor(props.getProperty(Markup.CSS_KEY_COLOR));
         String encoding = props.getOrDefault("encoding", BaseFont.WINANSI);
         return fontImp.getFont(face, encoding, true, size, style, color);
     }

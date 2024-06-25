@@ -1,29 +1,30 @@
 package com.lowagie.text.html;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Element;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.html.simpleparser.StyleSheet;
-import org.junit.jupiter.api.Test;
-
 import java.io.StringReader;
+import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-class EmbeddedImageTest
-{
+class EmbeddedImageTest {
 
     @Test
-    void processHtmlWithEmbeddedImage() throws Exception
-    {
-        String html = Files.readAllLines(Paths.get(ClassLoader.getSystemResource("base64-image.html").getPath())).stream()
-                .collect(Collectors.joining());
+    void processHtmlWithEmbeddedImage() throws Exception {
+        URI resourceUri = ClassLoader.getSystemResource("base64-image.html").toURI();
+        Path resourcePath = Paths.get(resourceUri);
+        String html = Files.readAllLines(resourcePath).stream().collect(Collectors.joining());
+
         final StringReader reader = new StringReader(html);
         final Map<String, Object> interfaceProps = new HashMap<>();
         final List<Element> elements = HTMLWorker.parseToList(reader, new StyleSheet(), interfaceProps);

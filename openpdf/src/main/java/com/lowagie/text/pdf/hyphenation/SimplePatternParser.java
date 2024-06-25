@@ -39,10 +39,10 @@
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Library general Public License for more
  * details.
- * 
+ *
  * Contributions by:
  * Lubos Strapko
- * 
+ *
  * If you didn't download this code from the following link, you should check if
  * you aren't using an obsolete version:
  * https://github.com/LibrePDF/OpenPDF
@@ -54,60 +54,39 @@ package com.lowagie.text.pdf.hyphenation;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.xml.simpleparser.SimpleXMLDocHandler;
 import com.lowagie.text.xml.simpleparser.SimpleXMLParser;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-/** Parses the xml hyphenation pattern.
+/**
+ * Parses the xml hyphenation pattern.
  *
  * @author Paulo Soares (psoares@consiste.pt)
  */
 public class SimplePatternParser implements SimpleXMLDocHandler,
         PatternConsumer {
-    int currElement;
-
-    PatternConsumer consumer;
-
-    StringBuffer token;
-
-    List<Object> exception;
-
-    char hyphenChar;
-
-    SimpleXMLParser parser;
 
     static final int ELEM_CLASSES = 1;
-
     static final int ELEM_EXCEPTIONS = 2;
-
     static final int ELEM_PATTERNS = 3;
-
     static final int ELEM_HYPHEN = 4;
+    int currElement;
+    PatternConsumer consumer;
+    StringBuffer token;
+    List<Object> exception;
+    char hyphenChar;
+    SimpleXMLParser parser;
 
-    /** Creates a new instance of PatternParser2 */
+    /**
+     * Creates a new instance of PatternParser2
+     */
     public SimplePatternParser() {
         token = new StringBuffer();
         hyphenChar = '-'; // default
-    }
-
-    public void parse(InputStream stream, PatternConsumer consumer) {
-        this.consumer = consumer;
-        try {
-            SimpleXMLParser.parse(this, stream);
-        } catch (IOException e) {
-            throw new ExceptionConverter(e);
-        } finally {
-            try {
-                stream.close();
-            } catch (Exception e) {
-            }
-        }
     }
 
     protected static String getPattern(String word) {
@@ -119,6 +98,42 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
             }
         }
         return pat.toString();
+    }
+
+    protected static String getInterletterValues(String pat) {
+        StringBuilder il = new StringBuilder();
+        String word = pat + "a"; // add dummy letter to serve as sentinel
+        int len = word.length();
+        for (int i = 0; i < len; i++) {
+            char c = word.charAt(i);
+            if (Character.isDigit(c)) {
+                il.append(c);
+                i++;
+            } else {
+                il.append('0');
+            }
+        }
+        return il.toString();
+    }
+
+    public static void main(String[] args) {
+        try {
+            if (args.length > 0) {
+                SimplePatternParser pp = new SimplePatternParser();
+                pp.parse(new FileInputStream(args[0]), pp);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void parse(InputStream stream, PatternConsumer consumer) {
+        this.consumer = consumer;
+        try (stream) {
+            SimpleXMLParser.parse(this, stream);
+        } catch (IOException e) {
+            throw new ExceptionConverter(e);
+        }
     }
 
     protected List<Object> normalizeException(List<Object> ex) {
@@ -165,22 +180,6 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         return res.toString();
     }
 
-    protected static String getInterletterValues(String pat) {
-        StringBuilder il = new StringBuilder();
-        String word = pat + "a"; // add dummy letter to serve as sentinel
-        int len = word.length();
-        for (int i = 0; i < len; i++) {
-            char c = word.charAt(i);
-            if (Character.isDigit(c)) {
-                il.append(c);
-                i++;
-            } else {
-                il.append('0');
-            }
-        }
-        return il.toString();
-    }
-
     public void endDocument() {
     }
 
@@ -188,22 +187,22 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
         if (token.length() > 0) {
             String word = token.toString();
             switch (currElement) {
-            case ELEM_CLASSES:
-                consumer.addClass(word);
-                break;
-            case ELEM_EXCEPTIONS:
-                exception.add(word);
-                exception = normalizeException(exception);
-                consumer.addException(getExceptionWord(exception),
-                        (ArrayList) ((ArrayList) exception).clone());
-                break;
-            case ELEM_PATTERNS:
-                consumer.addPattern(getPattern(word),
-                        getInterletterValues(word));
-                break;
-            case ELEM_HYPHEN:
-                // nothing to do
-                break;
+                case ELEM_CLASSES:
+                    consumer.addClass(word);
+                    break;
+                case ELEM_EXCEPTIONS:
+                    exception.add(word);
+                    exception = normalizeException(exception);
+                    consumer.addException(getExceptionWord(exception),
+                            (ArrayList) ((ArrayList) exception).clone());
+                    break;
+                case ELEM_PATTERNS:
+                    consumer.addPattern(getPattern(word),
+                            getInterletterValues(word));
+                    break;
+                case ELEM_HYPHEN:
+                    // nothing to do
+                    break;
             }
             if (currElement != ELEM_HYPHEN) {
                 token.setLength(0);
@@ -218,16 +217,6 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
 
     @Override
     public void startDocument() {
-    }
-
-    /**
-     * @deprecated use {@link SimplePatternParser#startElement(String, Map)}
-     */
-    @Override
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public void startElement(String tag, HashMap h) {
-        startElement(tag, ((Map<String, String>) h));
     }
 
     @Override
@@ -266,20 +255,20 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
             String word = tk.nextToken();
             // System.out.println("\"" + word + "\"");
             switch (currElement) {
-            case ELEM_CLASSES:
-                consumer.addClass(word);
-                break;
-            case ELEM_EXCEPTIONS:
-                exception.add(word);
-                exception = normalizeException(exception);
-                consumer.addException(getExceptionWord(exception),
-                        (ArrayList)((ArrayList) exception).clone());
-                exception.clear();
-                break;
-            case ELEM_PATTERNS:
-                consumer.addPattern(getPattern(word),
-                        getInterletterValues(word));
-                break;
+                case ELEM_CLASSES:
+                    consumer.addClass(word);
+                    break;
+                case ELEM_EXCEPTIONS:
+                    exception.add(word);
+                    exception = normalizeException(exception);
+                    consumer.addException(getExceptionWord(exception),
+                            (ArrayList) ((ArrayList) exception).clone());
+                    exception.clear();
+                    break;
+                case ELEM_PATTERNS:
+                    consumer.addPattern(getPattern(word),
+                            getInterletterValues(word));
+                    break;
             }
         }
     }
@@ -295,16 +284,5 @@ public class SimplePatternParser implements SimpleXMLDocHandler,
 
     public void addPattern(String p, String v) {
         System.out.println("pattern: " + p + " : " + v);
-    }
-
-    public static void main(String[] args) {
-        try {
-            if (args.length > 0) {
-                SimplePatternParser pp = new SimplePatternParser();
-                pp.parse(new FileInputStream(args[0]), pp);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

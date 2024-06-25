@@ -1,6 +1,4 @@
 /*
- * GlyphLayoutDocumentDin91379
- * 
  * This code is part of the 'OpenPDF Tutorial'.
  * You can find the complete tutorial at the following address:
  * https://github.com/LibrePDF/OpenPDF/wiki/Tutorial
@@ -18,25 +16,24 @@ import com.lowagie.text.FontFactory;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.LayoutProcessor;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Prints characters and sequences of DIN 91379
- * with correct glyph layout and kerning
+ * Prints characters and sequences of DIN 91379 with correct glyph layout and kerning
  */
 public class GlyphLayoutDocumentDin91379 {
 
     public static String TEXT_INTRO =
             "Test of formatting for letters and sequences defined in:\n"
-                    + "DIN 91379:2022-08: Characters and defined character sequences in Unicode for the electronic\n "
-                    + "processing of names and data exchange in Europe, with CD-ROM\n"
-                    + "See https://www.beuth.de/de/norm/din-91379/353496133\n"
-                    + "    https://github.com/String-Latin/DIN-91379-Characters-and-Sequences"
+                    + "DIN 91379:2022-08: Characters and defined character sequences in Unicode for the\n"
+                    + "electronic processing of names and data exchange in Europe, with CD-ROM.\n"
+                    + "See https://github.com/String-Latin/DIN-91379-Characters-and-Sequences\n"
                     + "and https://en.wikipedia.org/wiki/DIN_91379\n\n"
                     + "Fonts used: Noto Sans Regular, Noto Sans Math Regular, Noto Serif Regular\n"
-                    + "    see https://fonts.google.com/noto/specimen/Noto+Sans"
-                    + "    and https://github.com/googlefonts/noto-fonts/tree/main/hinted/ttf\n"
+                    + "See https://fonts.google.com/noto/specimen/Noto+Sans\n"
+                    + "and https://github.com/googlefonts/noto-fonts/tree/main/hinted/ttf\n"
                     + "Using LayoutProcessor for glyph layout with Java built-in routines.\n\n";
 
     public static String LATIN_CHARS_DIN_91379 =
@@ -79,7 +76,7 @@ public class GlyphLayoutDocumentDin91379 {
                     + "bnlnot; Non-Letters N4 (normative)\n"
                     + "-omitted-\n"
                     + "dc; Combining diacritics (normative)\n"
-                    + "̀-omitted-\n"
+                    + "-omitted-\n"
                     + "gl; Greek Letters (extended)\n"
                     + "Ά Έ Ή Ί Ό Ύ Ώ ΐ Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ \n"
                     + "Τ Υ Φ Χ Ψ Ω Ϊ Ϋ ά έ ή ί ΰ α β γ δ ε ζ η θ ι κ λ μ ν \n"
@@ -94,24 +91,18 @@ public class GlyphLayoutDocumentDin91379 {
 
     public static String LATIN_CHARS_DIN_91379_MATH =
             "enl; Non Letters E1 (extended) math\n"
-            + "∞ ≤ ≥ \n";
+                    + "∞ ≤ ≥ \n";
 
     public static String LATIN_CHARS_ADDITIONAL =
             "Additional non-letters (not included in DIN 91379)\n"
-            + "– — •�\n\n";
+                    + "– — •�\n\n";
 
-    public static String TEST_KERNING =
-            "Kerning\n"
-            +"AVATAR Vector TeX\n\n";
-
-    public static String TEST_LIGATURES =
-            "Ligatures\n"
-            + "ff ffi ffl fi fl\n\n";
 
     /**
      * Register and get font
-     * @param path of font file
-     * @param alias name
+     *
+     * @param path     of font file
+     * @param alias    name
      * @param fontSize size of font
      * @return the loaded font
      */
@@ -123,26 +114,20 @@ public class GlyphLayoutDocumentDin91379 {
 
     /**
      * Main method
-     * 
+     *
      * @param args -- not used
      */
-    public static void main(String[] args) {
-        try {
-            test("GlyphLayoutDocumentDin91379.pdf", true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void main(String[] args) throws Exception {
+        test("GlyphLayoutDocumentDin91379.pdf");
     }
 
 
     /**
      * Run the test: Print the characters of DIN 91379 in a pdf document
-     * 
-     * @param fileName Name of output file
-     * @param testChunks if true some chunks are added to test positioning
-     * @throws Exception if an error occurs
+     *
+     * @param fileName   Name of output file
      */
-    public static void test(String fileName, boolean testChunks) throws Exception {
+    public static void test(String fileName) throws IOException {
 
         // Enable the LayoutProcessor with kerning and ligatures
         LayoutProcessor.enableKernLiga();
@@ -153,13 +138,10 @@ public class GlyphLayoutDocumentDin91379 {
         // available for glyph layout.
         // Only these fonts can be used.
         String fontDir = "com/lowagie/examples/fonts/";
-        Font sansFont = loadFont(fontDir+"noto/NotoSans-Regular.ttf", "sans", fontSize);
+        Font sansFont = loadFont(fontDir + "noto/NotoSans-Regular.ttf", "sans", fontSize);
         String sansFontName = sansFont.getBaseFont().getPostscriptFontName();
-        Font mathFont = loadFont(fontDir+"noto/NotoSansMath-Regular.ttf", "math", fontSize);
+        Font mathFont = loadFont(fontDir + "noto/NotoSansMath-Regular.ttf", "math", fontSize);
         String mathFontName = mathFont.getBaseFont().getPostscriptFontName();
-        Font serifFont = loadFont(fontDir+"noto/NotoSerif-Regular.ttf", "serif", fontSize);
-        String serifFontName = serifFont.getBaseFont().getPostscriptFontName();
-
 
         try (Document document = new Document()) {
             PdfWriter writer = PdfWriter.getInstance(document, Files.newOutputStream(Paths.get(fileName)));
@@ -171,29 +153,7 @@ public class GlyphLayoutDocumentDin91379 {
             document.add(new Chunk(sansFontName + "\n" + LATIN_CHARS_DIN_91379, sansFont));
             document.add(new Chunk(mathFontName + "\n" + LATIN_CHARS_DIN_91379_MATH, mathFont));
             document.add(new Chunk(sansFontName + "\n" + LATIN_CHARS_ADDITIONAL, sansFont));
-            document.add(new Chunk(sansFontName + "\n" + TEST_KERNING, sansFont));
-            document.add(new Chunk(serifFontName + "\n" + TEST_LIGATURES, serifFont));
-
-            if(testChunks) {
-                addChunks(document, sansFont);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-    }
-    
-    /*
-     * Add several chunks to test positioning
-     */
-    private static void addChunks(Document document, Font font) {
-        document.add(new Chunk("\n"));
-        document.add(new Chunk("Test of several Chunks on one line: A", font));
-        document.add(new Chunk("A̋C̀C̄C̆C̈", font));
-        document.add(new Chunk("C̈C̕C̣C̦C̨̆", font));
-        document.add(new Chunk(".\n", font));
-        document.add(new Chunk("Another line: S", font));
-        document.add(new Chunk("Ṣ̄ṣ̄Ṭ̄ṭ̄Ạ̈ạ̈Ọ̈ọ̈Ụ̄Ụ̈ụ̄ụ̈", font));
-        document.add(new Chunk("j́S̛̄s̛̄K̛", font));
-        document.add(new Chunk(".\n", font));
+        LayoutProcessor.disable();
     }
 }

@@ -3,42 +3,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.getinsign</groupId>
+        <groupId>com.github.librepdf</groupId>
         <artifactId>openpdf-parent</artifactId>
-        <version>3.53-SNAPSHOT</version>
+        <version>2.0.3-SNAPSHOT</version>
     </parent>
 
-    
-    
-    <groupId>de.getinsign</groupId>
     <artifactId>openpdf</artifactId>
 
     <properties>
         <java-module-name>com.github.librepdf.openpdf</java-module-name>
-        <commons.lang.version>3.12.0</commons.lang.version>
-        <lombok.version>1.18.28</lombok.version>
     </properties>
 
     <dependencies>
         <dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
-		</dependency>        
-        <dependency>
-             <groupId>org.apache.commons</groupId>
-             <artifactId>commons-lang3</artifactId>
-             <version>${commons.lang.version}</version>
-        </dependency>        
-        <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>73.1</version>
+            <version>75.1</version>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -75,6 +56,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>5.10.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -85,6 +67,13 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.verapdf</groupId>
+            <artifactId>validation-model</artifactId>
+            <version>1.26.1</version>
+            <optional>true</optional>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -98,9 +87,6 @@
                 <directory>src/main/resources-filtered</directory>
                 <filtering>true</filtering>
             </resource>
-            <resource>
-                <directory>../src/main/resources</directory>
-            </resource>
         </resources>
         <plugins>
             <plugin>
@@ -109,12 +95,6 @@
                 <configuration>
                     <!-- unpack bundle, so humans can see the manifest without unpacking the jar -->
                     <unpackBundle>true</unpackBundle>
-                    <instructions>
-                        <!-- All com.lowagie.text.* packages are 'public' -->
-                        <Export-Package>com.lowagie.text.*;version="${project.version}"</Export-Package>
-                        <!-- Declare the Bouncycastle dependencies as optional -->
-                        <Import-Package>org.bouncycastle.*;resolution:=optional,!com.lowagie.*,*</Import-Package>
-                    </instructions>
                 </configuration>
             </plugin>
         </plugins>

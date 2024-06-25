@@ -50,6 +50,7 @@
 package com.lowagie.text.xml;
 
 
+import com.lowagie.text.ExceptionConverter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -57,8 +58,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import com.lowagie.text.ExceptionConverter;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
@@ -99,7 +98,10 @@ public class TagMap extends HashMap<String, XmlPeer> {
 
     protected void init(InputStream in) {
         try {
-            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            SAXParser parser = factory.newSAXParser();
             parser.parse(new InputSource(in), new AttributeHandler((Map<String, XmlPeer>) this));
         } catch (Exception e) {
             throw new ExceptionConverter(e);
@@ -147,18 +149,6 @@ public class TagMap extends HashMap<String, XmlPeer> {
          * This is the current peer.
          */
         private XmlPeer currentPeer;
-
-        /**
-         * Constructs a new SAXiTextHandler that will translate all the events
-         * triggered by the parser to actions on the <CODE>Document</CODE>-object.
-         *
-         * @param tagMap A Hashmap containing XmlPeer-objects
-         */
-        @Deprecated
-        @SuppressWarnings("unchecked")
-        public AttributeHandler(HashMap tagMap) {
-            this.tagMap = tagMap;
-        }
 
         public AttributeHandler(Map<String, XmlPeer> tagMap) {
             this.tagMap = tagMap;

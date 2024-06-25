@@ -1,7 +1,7 @@
 /*
  * LayoutProcessor.java
  *
- * Copyright 2020-2022 Volker Kunert.
+ * Copyright 2020-2024 Volker Kunert.
  *
  * The contents of this file are subject to the Mozilla Public License Version 1.1
  * (the "License"); you may not use this file except in compliance with the License.
@@ -65,6 +65,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LayoutProcessor {
 
+    public enum Version {
+        ONE,
+        TWO
+    }
+
+    private static Version version = Version.TWO;
+
     private static final int DEFAULT_FLAGS = -1;
     private static final Map<BaseFont, java.awt.Font> awtFontMap = new ConcurrentHashMap<>();
 
@@ -74,15 +81,16 @@ public class LayoutProcessor {
     private static boolean enabled = false;
     private static int flags = DEFAULT_FLAGS;
 
+    private static boolean writeActualText;
+
     private LayoutProcessor() {
         throw new UnsupportedOperationException("static class");
     }
 
     /**
      * Enables the processor.
-     * Kerning and ligatures are switched off.
-     *
-     * This method can only be called once.
+     * <p>
+     * Kerning and ligatures are switched off. This method can only be called once.
      */
     public static void enable() {
         enabled = true;
@@ -90,9 +98,8 @@ public class LayoutProcessor {
 
     /**
      * Enables the processor with the provided flags.
-     * Kerning and ligatures are switched off.
-     *
-     * This method can only be called once.
+     * <p>
+     * Kerning and ligatures are switched off. This method can only be called once.
      *
      * @param flags see java.awt.Font.layoutGlyphVector
      */
@@ -100,15 +107,14 @@ public class LayoutProcessor {
         if (enabled) {
             throw new UnsupportedOperationException("LayoutProcessor is already enabled");
         }
-        enabled = true;
+        enable();
         LayoutProcessor.flags = flags;
     }
 
     /**
      * Enables the processor.
-     * Kerning and ligatures are switched on.
-     *
-     * This method can only be called once.
+     * <p>
+     * Kerning and ligatures are switched on. This method can only be called once.
      */
     public static void enableKernLiga() {
         enableKernLiga(DEFAULT_FLAGS);
@@ -116,9 +122,8 @@ public class LayoutProcessor {
 
     /**
      * Enables the processor with the provided flags.
-     * Kerning and ligatures are switched on.
-     *
-     * This method can only be called once.
+     * <p>
+     * Kerning and ligatures are switched on. This method can only be called once.
      *
      * @param flags see java.awt.Font.layoutGlyphVector
      */
@@ -128,7 +133,7 @@ public class LayoutProcessor {
         }
         setKerning();
         setLigatures();
-        enabled = true;
+        enable();
         LayoutProcessor.flags = flags;
     }
 
@@ -137,89 +142,122 @@ public class LayoutProcessor {
     }
 
     /**
+     * Set version
+     *
+     * @param version to set
+     * @deprecated To be used *only*, if version two produces incorrect PDF - please file an issue if this occurs
+     */
+    @Deprecated
+    public static void setVersion(Version version) {
+        LayoutProcessor.version = version;
+    }
+
+    /**
      * Set kerning
-     * @see
-     * <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
-     *     Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
+     *
+     * @see <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
+     * Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
      */
     public static void setKerning() {
         LayoutProcessor.globalTextAttributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
     }
+
     /**
      * Set kerning for one font
+     *
      * @param font The font for which kerning is to be turned on
-     * @see
-     * <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
-     *     Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
+     * @see <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
+     * Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
      */
-    public static void setKerning(com.lowagie.text.Font  font) {
+    public static void setKerning(com.lowagie.text.Font font) {
         Map<TextAttribute, Object> textAttributes = new HashMap<>();
         textAttributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         setTextAttributes(font, textAttributes);
     }
+
     /**
      * Add ligatures
      */
     public static void setLigatures() {
         LayoutProcessor.globalTextAttributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
     }
+
     /**
      * Set ligatures for one font
-     * @param font The font for which ligatures are to be turned on
      *
+     * @param font The font for which ligatures are to be turned on
      */
-    public static void setLigatures(com.lowagie.text.Font  font) {
+    public static void setLigatures(com.lowagie.text.Font font) {
         Map<TextAttribute, Object> textAttributes = new HashMap<>();
         textAttributes.put(TextAttribute.LIGATURES, TextAttribute.LIGATURES_ON);
         setTextAttributes(font, textAttributes);
     }
+
     /**
      * Set run direction for one font to RTL
-     * @param font The font for which the run direction is set
      *
+     * @param font The font for which the run direction is set
      */
-    public static void setRunDirectionRtl(com.lowagie.text.Font  font) {
+    public static void setRunDirectionRtl(com.lowagie.text.Font font) {
         setRunDirection(font, TextAttribute.RUN_DIRECTION_RTL);
     }
+
     /**
      * Set run direction for one font to LTR
-     * @param font The font for which the run direction is set
      *
+     * @param font The font for which the run direction is set
      */
-    public static void setRunDirectionLtr(com.lowagie.text.Font  font) {
+    public static void setRunDirectionLtr(com.lowagie.text.Font font) {
         setRunDirection(font, TextAttribute.RUN_DIRECTION_LTR);
     }
+
     /**
      * Set run direction for one font
-     * @param font The font for which the run direction is set
      *
+     * @param font The font for which the run direction is set
      */
-    private static void setRunDirection(com.lowagie.text.Font  font, Boolean runDirection) {
+    private static void setRunDirection(com.lowagie.text.Font font, Boolean runDirection) {
         Map<TextAttribute, Object> textAttributes = new HashMap<>();
         textAttributes.put(TextAttribute.RUN_DIRECTION, runDirection);
         setTextAttributes(font, textAttributes);
     }
+
     /**
-     * Set text attributes to font
-     * The attributes are used only for glyph layout,
-     * and don't change the visual appearance of the font
-     * @param font The font for which kerning is to be turned on
+     * Set text attributes to font The attributes are used only for glyph layout, and don't change the visual appearance
+     * of the font
+     *
+     * @param font           The font for which kerning is to be turned on
      * @param textAttributes Map of text attributes to be set
-     * @see
-     * <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
-     *     Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>*
+     * @see <a href="https://docs.oracle.com/javase/tutorial/2d/text/textattributes.html">
+     * Oracle: The Java™ Tutorials, Using Text Attributes to Style Text</a>
      */
-    private static void setTextAttributes(com.lowagie.text.Font  font, Map<TextAttribute, Object> textAttributes) {
+    private static void setTextAttributes(com.lowagie.text.Font font, Map<TextAttribute, Object> textAttributes) {
         BaseFont baseFont = font.getBaseFont();
         java.awt.Font awtFont = awtFontMap.get(baseFont);
-        if (awtFont!=null) {
+        if (awtFont != null) {
             awtFont = awtFont.deriveFont(textAttributes);
             awtFontMap.put(baseFont, awtFont);
         }
     }
 
+    /**
+     * Include ACTUALTEXT in PDF
+     */
+    public static void setWriteActualText() {
+        writeActualText = true;
+    }
+
     public static int getFlags() {
         return flags;
+    }
+
+    /**
+     * Returns the currennt version
+     *
+     * @return current version
+     */
+    public static Version getVersion() {
+        return  LayoutProcessor.version;
     }
 
     public static boolean isSet(int queryFlags) {
@@ -233,13 +271,12 @@ public class LayoutProcessor {
     /**
      * Loads the AWT font needed for layout
      *
-     * @param baseFont  OpenPdf base font
+     * @param baseFont OpenPdf base font
      * @param filename of the font file
-     *
      * @throws RuntimeException if font can not be loaded
      */
     public static void loadFont(BaseFont baseFont, String filename) {
-        if (!enabled) {
+        if (!enabled || awtFontMap.get(baseFont) != null) {
             return;
         }
 
@@ -271,7 +308,7 @@ public class LayoutProcessor {
                 }
                 awtFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inputStream);
                 if (awtFont != null) {
-                    if (globalTextAttributes.size()>0) {
+                    if (!globalTextAttributes.isEmpty()) {
                         awtFont = awtFont.deriveFont(LayoutProcessor.globalTextAttributes);
                     }
                     awtFontMap.put(baseFont, awtFont);
@@ -293,8 +330,8 @@ public class LayoutProcessor {
     /**
      * Computes glyph positioning
      *
-     * @param baseFont  OpenPdf base font
-     * @param text input text
+     * @param baseFont OpenPdf base font
+     * @param text     input text
      * @return glyph vector containing reordered text, width and positioning info
      */
     public static GlyphVector computeGlyphVector(BaseFont baseFont, float fontSize, String text) {
@@ -311,24 +348,23 @@ public class LayoutProcessor {
         }
         java.awt.Font awtFont = LayoutProcessor.awtFontMap.get(baseFont).deriveFont(fontSize);
         Map<TextAttribute, ?> textAttributes = awtFont.getAttributes();
-        if (textAttributes!=null) {
+        if (textAttributes != null) {
             Object runDirection = textAttributes.get(TextAttribute.RUN_DIRECTION);
-            if (runDirection!=null) {
-                localFlags = runDirection==TextAttribute.RUN_DIRECTION_LTR ? java.awt.Font.LAYOUT_LEFT_TO_RIGHT :
+            if (runDirection != null) {
+                localFlags = runDirection == TextAttribute.RUN_DIRECTION_LTR ? java.awt.Font.LAYOUT_LEFT_TO_RIGHT :
                         java.awt.Font.LAYOUT_RIGHT_TO_LEFT;
             }
         }
         return awtFont.layoutGlyphVector(fontRenderContext, chars, 0, chars.length, localFlags);
     }
 
-   /**
-    * Checks if the glyphVector contains adjustments
-    * that make advanced layout necessary
-    *
-    * @param glyphVector glyph vector containing the positions
-    * @return true, if the glyphVector contains adjustments
-    */
-    private static boolean hasAdjustments(GlyphVector glyphVector) {
+    /**
+     * Checks if the glyphVector contains adjustments that make advanced layout necessary
+     *
+     * @param glyphVector glyph vector containing the positions
+     * @return true, if the glyphVector contains adjustments
+     */
+    private static boolean noAdjustments(GlyphVector glyphVector) {
         boolean retVal = false;
         float lastX = 0f;
         float lastY = 0f;
@@ -348,7 +384,7 @@ public class LayoutProcessor {
             lastX = (float) p.getX();
             lastY = (float) p.getY();
         }
-        return retVal;
+        return !retVal;
     }
 
     /**
@@ -361,8 +397,26 @@ public class LayoutProcessor {
      * @return layout position correction to correct the start of the next line
      */
     public static Point2D showText(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
+
+        if (LayoutProcessor.version == Version.ONE) {
+            return showText1(cb, baseFont, fontSize, text);
+        } else {
+            return showText2(cb, baseFont, fontSize, text);
+        }
+    }
+
+
+    private static void completeCmap(PdfContentByte cb, BaseFont baseFont, String text, GlyphVector glyphVector) {
+        cb.state.fontDetails.addMissingCmapEntries(text, glyphVector, baseFont);
+    }
+
+
+    @Deprecated
+    private static Point2D showText1(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
         GlyphVector glyphVector = computeGlyphVector(baseFont, fontSize, text);
-        if (!hasAdjustments(glyphVector)) {
+        completeCmap(cb, baseFont, text, glyphVector);
+
+        if (noAdjustments(glyphVector)) {
             cb.showText(glyphVector);
             Point2D p = glyphVector.getGlyphPosition(glyphVector.getNumGlyphs());
             float dx = (float) p.getX();
@@ -390,6 +444,82 @@ public class LayoutProcessor {
         float dx = (float) p.getX() - lastX;
         float dy = (float) p.getY() - lastY;
         cb.moveTextBasic(dx, -dy);
+
         return new Point2D.Double(-p.getX(), p.getY());
+    }
+
+
+    private static Point2D showText2(PdfContentByte cb, BaseFont baseFont, float fontSize, String text) {
+        GlyphVector glyphVector = computeGlyphVector(baseFont, fontSize, text);
+        completeCmap(cb, baseFont, text, glyphVector);
+
+        if (writeActualText) {
+            PdfDictionary d = new PdfDictionary();
+            d.put(PdfName.ACTUALTEXT, new PdfString(text, PdfObject.TEXT_UNICODE));
+            cb.beginMarkedContentSequence(PdfName.SPAN, d, true);
+        }
+        if (noAdjustments(glyphVector)) {
+            cb.showText(glyphVector);
+        } else {
+            adjustAndShowText(cb, fontSize, glyphVector);
+        }
+        if (writeActualText) {
+            cb.endMarkedContentSequence();
+        }
+        return new Point2D.Double(0.0, 0.0);
+    }
+
+
+    private static void adjustAndShowText(PdfContentByte cb, final float fontSize, final GlyphVector glyphVector) {
+
+        final float deltaY = 1e-5f;
+        final float deltaX = deltaY;
+        final float factorX = 1000f / fontSize;
+
+        float lastX = 0f;
+
+        PdfGlyphArray ga = new PdfGlyphArray();
+
+        for (int i = 0; i < glyphVector.getNumGlyphs(); i++) {
+            Point2D p = glyphVector.getGlyphPosition(i);
+            float ax = (i == 0) ? 0.0f : glyphVector.getGlyphMetrics(i - 1).getAdvanceX();
+            float dx = (float) p.getX() - lastX - ax;
+            float py = (float) p.getY();
+
+            if (Math.abs(py) >= deltaY) {
+                if (!ga.isEmpty()) {
+                    cb.showText(ga);
+                    ga.clear();
+                }
+                cb.setTextRise(-py);
+            }
+            if (Math.abs(dx) >= deltaX) {
+                ga.add(-dx * factorX);
+            }
+            ga.add(glyphVector.getGlyphCode(i));
+            if (Math.abs(py) >= deltaY) {
+                cb.showText(ga);
+                ga.clear();
+                cb.setTextRise(0.0f);
+            }
+            lastX = (float) p.getX();
+        }
+        Point2D p = glyphVector.getGlyphPosition(glyphVector.getNumGlyphs());
+        float ax = (glyphVector.getNumGlyphs() == 0) ? 0.0f : glyphVector.getGlyphMetrics(glyphVector.getNumGlyphs() - 1).getAdvanceX();
+        float dx = (float) p.getX() - lastX - ax;
+        if (Math.abs(dx) >= deltaX) {
+            ga.add(-dx * factorX);
+        }
+        cb.showText(ga);
+        ga.clear();
+    }
+
+    public static void disable() {
+        enabled = false;
+        flags = DEFAULT_FLAGS;
+        awtFontMap.clear();
+        globalTextAttributes.clear();
+        writeActualText = false;
+        setVersion(Version.TWO);
     }
 }

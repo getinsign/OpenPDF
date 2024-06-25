@@ -63,8 +63,7 @@ public class ChainedProperties {
     /**
      * Will be replaced with types alternative
      */
-    @Deprecated
-    public ArrayList chain = new ArrayList<>();
+    public ArrayList<Object[]> chain = new ArrayList<>();
 
     /**
      * Creates a new instance of ChainedProperties
@@ -80,12 +79,12 @@ public class ChainedProperties {
      * Try find property by its name
      *
      * @param key property name
-     * @return {@link Optional} containing the value or {@link Optional#empty()} if there is no value or
-     * it equals {@code null}
+     * @return {@link Optional} containing the value or {@link Optional#empty()} if there is no value or it equals
+     * {@code null}
      */
     public Optional<String> findProperty(String key) {
         for (int k = chain.size() - 1; k >= 0; --k) {
-            Object[] obj = (Object[]) chain.get(k);
+            Object[] obj = chain.get(k);
             HashMap prop = (HashMap) obj[1];
             String ret = (String) prop.get(key);
             if (ret != null) {
@@ -110,21 +109,11 @@ public class ChainedProperties {
         for (int k = chain.size() - 1; k >= 0; --k) {
             Object[] obj = (Object[]) chain.get(k);
             HashMap prop = (HashMap) obj[1];
-            if (prop.containsKey(key))
+            if (prop.containsKey(key)) {
                 return true;
+            }
         }
         return false;
-    }
-
-    /**
-     * @deprecated use {@link ChainedProperties#addToChain(String, HashMap)}
-     * @param key the key
-     * @param prop the properties
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    public void addToChain(String key, HashMap prop) {
-        addToChain(key, (Map<String, String>) prop);
     }
 
     public void addToChain(String key, Map<String, String> prop) {
@@ -156,10 +145,11 @@ public class ChainedProperties {
                         s = 0;
                     }
                 }
-                if (s < 0)
+                if (s < 0) {
                     s = 0;
-                else if (s >= fontSizes.length)
+                } else if (s >= fontSizes.length) {
                     s = fontSizes.length - 1;
+                }
                 prop.put(ElementTags.SIZE, Integer.toString(fontSizes[s]));
             }
         }
