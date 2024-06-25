@@ -393,9 +393,9 @@
 
   <profiles>
     <profile>
-      <id>jdk17-plus</id>
+      <id>jdk11-plus</id>
       <activation>
-        <jdk>[17,)</jdk>
+        <jdk>[11,)</jdk>
       </activation>
       <dependencyManagement>
         <dependencies>
