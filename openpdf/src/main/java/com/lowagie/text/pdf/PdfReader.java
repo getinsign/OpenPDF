@@ -747,11 +747,11 @@ public class PdfReader implements PdfViewerPreferences, Closeable {
         cryptoMode = PdfWriter.STANDARD_ENCRYPTION_128;
         break;
       case 4:
-        PdfDictionary dic = (PdfDictionary) enc.get(PdfName.CF);
+    	  PdfDictionary dic = (PdfDictionary) PdfReader.getPdfObject(enc.get(PdfName.CF));
         if (dic == null)
           throw new InvalidPdfException(
               MessageLocalization.getComposedMessage("cf.not.found.encryption"));
-        dic = (PdfDictionary) dic.get(PdfName.STDCF);
+        dic = (PdfDictionary) PdfReader.getPdfObject(dic.get(PdfName.STDCF));
         if (dic == null)
           throw new InvalidPdfException(
               MessageLocalization
