@@ -5,7 +5,7 @@
 
     <groupId>de.getinsign</groupId>
     <artifactId>openpdf-parent</artifactId>
-    <version>3.53-SNAPSHOT</version> <!-- artifact.version -->
+    <version>3.60-SNAPSHOT</version> <!-- artifact.version -->
     <packaging>pom</packaging>
 
     <!-- please run mvn tidy:pom once in a while -->
