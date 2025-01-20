@@ -266,8 +266,9 @@ public class InsignPdfStamperImp extends PdfStamperImp  {
 
 	//IS-836: Fix iText Decoding UTF-8 producer String
 	protected void fixProducerEncoding() {
-		PRIndirectReference iInfo = (PRIndirectReference) reader.getTrailer().get(PdfName.INFO);
-		PdfDictionary oldInfo = (PdfDictionary) PdfReader.getPdfObject(iInfo);
+		PdfObject pdfObject = reader.getTrailer().get(PdfName.INFO);
+		PdfDictionary oldInfo = (PdfDictionary) PdfReader.getPdfObject(pdfObject);
+
 		PdfString producer = null;
 		if (oldInfo!=null)
 		{
