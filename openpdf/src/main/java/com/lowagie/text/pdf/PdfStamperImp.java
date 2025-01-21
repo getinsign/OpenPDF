@@ -215,12 +215,15 @@ class PdfStamperImp extends PdfWriter {
         }
         // metadata
         int skipInfo = -1;
-        PRIndirectReference iInfo = (PRIndirectReference)reader.getTrailer().get(PdfName.INFO);
-
-        PdfDictionary oldInfo = (PdfDictionary)PdfReader.getPdfObject(iInfo);
+        PdfObject pdfObject = reader.getTrailer().get(PdfName.INFO);
+        PRIndirectReference iInfo = null;
+        if (pdfObject instanceof PRIndirectReference) {
+            iInfo = (PRIndirectReference) pdfObject;
+        }
+        PdfDictionary oldInfo = (PdfDictionary)PdfReader.getPdfObject(pdfObject);
         String producer = null;
         if (iInfo != null) {
-          skipInfo = iInfo.getNumber();
+            skipInfo = iInfo.getNumber();
         }
         if (oldInfo != null && oldInfo.get(PdfName.PRODUCER) != null) {
           producer = oldInfo.getAsString(PdfName.PRODUCER).toUnicodeString();
