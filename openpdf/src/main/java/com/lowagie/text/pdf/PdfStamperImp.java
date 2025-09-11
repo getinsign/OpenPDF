@@ -153,6 +153,52 @@ class PdfStamperImp extends PdfWriter {
         }
         initialXrefSize = reader.getXrefSize();
     }
+    
+    void removeInvalidReferenzesInPageContent() {
+
+        for (int i = 1; i <= reader.getNumberOfPages(); i++) {
+            try {
+                PdfDictionary pageDic = reader.getPageN(i);
+                if (pageDic == null) {
+                    continue;
+                }
+                PdfObject contentObj = pageDic.getDirectObject(PdfName.CONTENTS);
+                PdfArray array;
+                if (contentObj instanceof PRStream) {
+                    continue;
+                } else if (contentObj instanceof PdfArray ) {
+                    array = (PdfArray) contentObj;
+                    ArrayList<Integer> badIndexes = new ArrayList<>();
+                    for (int j = 0; j < array.size(); j++) {
+                        PdfObject pdfObject = array.getPdfObject(j);
+                        PdfObject directObject = PdfReader.getPdfObject(pdfObject);
+                        if (directObject == null) {
+                            //Indirect Referenz without direct object found in Content -> has to be removed
+                            badIndexes.add(j);
+                        }
+                    }
+                    if (!badIndexes.isEmpty()) {
+                        PdfArray newArray = new PdfArray();
+                        for (int a = 0; a < array.size(); a++) {
+                            if (!badIndexes.contains(a)) {
+                                newArray.add(array.getPdfObject(a));
+                            }
+                        }
+                        if (!newArray.isEmpty()){
+                            pageDic.put(PdfName.CONTENTS, newArray);
+                        } else {
+                            //override with nothing because otherwise it's a little bit tricky not to break stuff
+                            pageDic.put(PdfName.CONTENTS, new PdfStream(new byte[0]));
+                        }
+                    }
+                } else {
+                    continue;
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
 
     void close(Map<String, String> moreInfo) throws IOException {
         if (closed)
@@ -165,6 +211,9 @@ class PdfStamperImp extends PdfWriter {
             flatFields();
         if (flatFreeText)
             flatFreeTextFields();
+
+
+        removeInvalidReferenzesInPageContent();
         addFieldResources();
         PdfDictionary catalog = reader.getCatalog();
         PdfDictionary pages = (PdfDictionary)PdfReader.getPdfObject(catalog.get(PdfName.PAGES));
