@@ -213,7 +213,6 @@ class PdfStamperImp extends PdfWriter {
             flatFreeTextFields();
 
 
-        removeInvalidReferenzesInPageContent();
         addFieldResources();
         PdfDictionary catalog = reader.getCatalog();
         PdfDictionary pages = (PdfDictionary)PdfReader.getPdfObject(catalog.get(PdfName.PAGES));
