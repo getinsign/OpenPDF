@@ -20,4 +20,4 @@ jobs:
         reporter: 'github-pr-check'
         filter_mode: nofilter
         level: error
-        fail_on_error: false
+        fail_level: none
