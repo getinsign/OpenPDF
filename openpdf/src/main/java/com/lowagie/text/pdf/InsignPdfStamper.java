@@ -51,7 +51,11 @@ public class InsignPdfStamper extends PdfStamper {
 	public void addDirectTemplateSimple(PdfTemplate template, PdfName forcedName) {
 		getWriter().addDirectTemplateSimple(template,forcedName);
 	}
-	
+
+	public void markUsed(PdfObject obj) {
+		stamper.markUsed(obj);
+	}
+
     @Override
 	public PdfSignatureAppearance getSignatureAppearance() {
         return sigApp;

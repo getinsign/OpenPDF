@@ -176,6 +176,7 @@ public class InsignPdfSignatureAppearance extends PdfSignatureAppearance {
 			}
             sigField.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, getAppearance());
             sigField.setPage(pagen);
+			sigField.put(PdfName.TU, new PdfString("Digital signature"));
             writer.addAnnotation(sigField, pagen);
         }
 
