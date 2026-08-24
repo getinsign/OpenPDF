@@ -290,13 +290,27 @@ class PdfStamperImp extends PdfWriter {
 
         // XMP
         byte[] altMetadata = null;
+        boolean keepExistingMetadata = false;
         PdfObject xmpo = PdfReader.getPdfObject(catalog.get(PdfName.METADATA));
         if (xmpo != null && xmpo.isStream()) {
-          altMetadata = PdfReader.getStreamBytesRaw((PRStream)xmpo);
-          PdfReader.killIndirect(catalog.get(PdfName.METADATA));
+          try {
+            // the filters have to be applied here: XmpReader expects the XML itself, and the
+            // stream written below declares no /Filter, so encoded bytes would end up as a
+            // /Metadata stream that no XMP parser can read
+            altMetadata = PdfReader.getStreamBytes((PRStream)xmpo);
+          }
+          catch (IOException | RuntimeException e) {
+            // undecodable: keep the stream as it is instead of re-emitting bytes that no
+            // longer match the dictionary describing them
+            keepExistingMetadata = true;
+          }
         }
         if (xmpMetadata != null) {
           altMetadata = xmpMetadata;
+          keepExistingMetadata = false;
+        }
+        if (xmpo != null && xmpo.isStream() && !keepExistingMetadata) {
+          PdfReader.killIndirect(catalog.get(PdfName.METADATA));
         }
         PdfDate date;
         if (modificationDate == null) {

@@ -1002,7 +1002,12 @@ public class PdfSignatureAppearance {
     if (fieldExists) {
       PdfDictionary widget = af.getFieldItem(name).getWidget(0);
       writer.markUsed(widget);
-      widget.put(PdfName.P, writer.getPageReference(getPage()));
+      // /P is optional, and adding it to a widget that has none introduces a structural key
+      // into an object that earlier signatures already cover, which validators report as an
+      // impermissible change. In append mode it is therefore only refreshed, never added.
+      if (!writer.isAppend() || widget.get(PdfName.P) != null) {
+        widget.put(PdfName.P, writer.getPageReference(getPage()));
+      }
       widget.put(PdfName.V, refSig);
       PdfObject obj = PdfReader.getPdfObjectRelease(widget.get(PdfName.F));
       int flags = 0;

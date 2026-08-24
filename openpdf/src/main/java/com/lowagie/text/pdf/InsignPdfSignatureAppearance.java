@@ -143,7 +143,12 @@ public class InsignPdfSignatureAppearance extends PdfSignatureAppearance {
             //**************** ENDE FIX IS-2297 **********************************************************************
             
             writer.markUsed(widget);
-            widget.put(PdfName.P, writer.getPageReference(getPage()));
+            // /P is optional, and adding it to a widget that has none introduces a structural key
+            // into an object that earlier signatures already cover, which validators report as an
+            // impermissible change. In append mode it is therefore only refreshed, never added.
+            if (!writer.isAppend() || widget.get(PdfName.P) != null) {
+                widget.put(PdfName.P, writer.getPageReference(getPage()));
+            }
             
             //********** TB /V must go into fielditem rather than the widget dict! (IS-2297 Hinweis von CIB) *********
             //Not into widget dict - that is wrong.
