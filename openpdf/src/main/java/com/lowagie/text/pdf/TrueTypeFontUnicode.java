@@ -60,6 +60,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Represents a True Type font with Unicode encoding. All the character
  * in the font can be used directly by using the encoding Identity-H or
@@ -395,24 +396,7 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator{
         PdfIndirectReference ind_font = null;
         PdfObject pobj = null;
         PdfIndirectObject obj = null;
-        PdfIndirectReference cidset = null;
-        if (subset || writer.getPDFXConformance() == PdfWriter.PDFA1A || writer.getPDFXConformance() == PdfWriter.PDFA1B) {
-            PdfStream stream;
-            if (metrics.length == 0) {
-                stream = new PdfStream(new byte[]{(byte)0x80});
-            }
-            else {
-                int top = metrics[metrics.length - 1][0];
-                byte[] bt = new byte[top / 8 + 1];
-                for (int[] metric : metrics) {
-                    int v = metric[0];
-                    bt[v / 8] |= rotbits[v % 8];
-                }
-                stream = new PdfStream(bt);
-                stream.flateCompress(compressionLevel);
-            }
-            cidset = writer.addToBody(stream).getIndirectReference();
-        }
+        boolean writeCidSet = subset || writer.getPDFXConformance() == PdfWriter.PDFA1A || writer.getPDFXConformance() == PdfWriter.PDFA1B;
         // sivan: cff
         if (cff) {
             byte[] b = readCffFont();
@@ -437,6 +421,24 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator{
             obj = writer.addToBody(pobj);
             ind_font = obj.getIndirectReference();
         }
+        // The CIDSet has to be built after the font program, not before it, and it has to cover
+        // every CID the program declares - "regardless of whether a CID in the font is referenced
+        // or used by the PDF or not" (PDF/A-1 6.3.7, PDF/UA-1 7.21.4.2). Subsetting empties the
+        // glyf entries it drops but leaves maxp and loca at their original length, so the subset
+        // program keeps declaring all of the original glyphs and all of them belong in the bitmap.
+        // Building it from the pre-subset glyph map instead produced the incomplete CIDSet that
+        // validators reject.
+        // The glyph map is only a fallback for fonts whose maxp cannot be read: the subsetter
+        // stores a null value for the glyphs it adds, so nothing but its key set is usable, and
+        // metrics has to stay the pre-subset snapshot so that /W and ToUnicode keep describing the
+        // glyphs the content stream actually addresses.
+        PdfIndirectReference cidset = null;
+        if (writeCidSet) {
+            // CFF programs are subset by CFFFontSubset, which does not keep the glyph count, so
+            // they stay on the glyph map alone.
+            int declaredGlyphs = cff ? -1 : readNumberOfGlyphs();
+            cidset = writer.addToBody(buildCidSet(longTag.keySet(), declaredGlyphs)).getIndirectReference();
+        }
         String subsetPrefix = "";
         if (subset)
             subsetPrefix = createSubsetPrefix();
@@ -459,7 +461,60 @@ class TrueTypeFontUnicode extends TrueTypeFont implements Comparator{
         pobj = getFontBaseType(ind_font, subsetPrefix, toUnicodeRef);
         writer.addToBody(pobj, ref);
     }
-    
+
+    /**
+     * Builds the CIDSet bitmap for a font descriptor. Bit <CODE>n</CODE>, counted from the most
+     * significant bit of the first byte, marks CID <CODE>n</CODE> as present in the embedded font
+     * program. Trailing zero bytes may be omitted, so the bitmap ends after the highest CID.
+     *
+     * @param glyphs         the glyphs the content stream addresses, plus whatever the subsetter
+     *                       added to the program
+     * @param declaredGlyphs the glyph count the program declares in its maxp table, or -1 when it
+     *                       could not be read
+     * @return the stream to be referenced from the font descriptor
+     */
+    private PdfStream buildCidSet(Set<Integer> glyphs, int declaredGlyphs) {
+        int top = declaredGlyphs - 1;
+        for (int glyph : glyphs) {
+            if (glyph > top)
+                top = glyph;
+        }
+        if (top < 0)
+            return new PdfStream(new byte[]{(byte)0x80}); // glyph 0 is always part of the program
+        byte[] bt = new byte[top / 8 + 1];
+        for (int glyph = 0; glyph < declaredGlyphs; ++glyph) {
+            bt[glyph / 8] |= rotbits[glyph % 8];
+        }
+        for (int glyph : glyphs) {
+            bt[glyph / 8] |= rotbits[glyph % 8];
+        }
+        PdfStream stream = new PdfStream(bt);
+        stream.flateCompress(compressionLevel);
+        return stream;
+    }
+
+    /**
+     * The number of glyphs the font program declares in its maxp table, or -1 if there is no such
+     * table. The subsetter copies maxp unchanged, so this is the glyph count of the subset program
+     * as well.
+     */
+    private int readNumberOfGlyphs() throws IOException {
+        int[] tableLocation = tables.get("maxp");
+        if (tableLocation == null) {
+            return -1;
+        }
+        RandomAccessFileOrArray rf2 = null;
+        try {
+            rf2 = new RandomAccessFileOrArray(rf);
+            rf2.reOpen();
+            rf2.seek(tableLocation[0] + 4);
+            return rf2.readUnsignedShort();
+        }
+        finally {
+            try {if (rf2 != null) {rf2.close();}} catch (Exception e) {}
+        }
+    }
+
     /**
      * Returns a PdfStream object with the full font program.
      * @return    a PdfStream with the font program
